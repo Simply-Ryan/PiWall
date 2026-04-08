@@ -17,6 +17,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTelemetry } from '@hooks/useTelemetry';
+import { useVoice } from '@hooks/useVoice';
 import { SpeedDisplay } from './SpeedDisplay';
 import { GearDisplay } from './GearDisplay';
 import { RPMDisplay } from './RPMDisplay';
@@ -32,6 +33,7 @@ import { LapTimeDisplay } from './LapTimeDisplay';
  */
 export const Dashboard: React.FC = () => {
   const { data, isConnected, error } = useTelemetry();
+  const { isEnabled: voiceEnabled, isSpeaking, queueSize } = useVoice();
 
   // Memoize layout to prevent unnecessary re-renders
   const shouldShowTelemetry = useMemo(() => data !== null && isConnected, [data, isConnected]);
@@ -60,6 +62,13 @@ export const Dashboard: React.FC = () => {
             <View style={styles.connectionIndicator}>
               <Text style={styles.connectionText}>✓ Connected</Text>
             </View>
+            {voiceEnabled && (
+              <View style={[styles.voiceIndicator, isSpeaking && styles.voiceSpeaking]}>
+                <Text style={styles.voiceText}>
+                  🎙️ {isSpeaking ? 'Speaking' : `Queue: ${queueSize}`}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Throttle / Brake Visualization */}
@@ -155,7 +164,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  placeholder: {
+  voiceIndicator: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+
+  voiceSpeaking: {
+    backgroundColor: '#FF9800',
+    borderWidth: 1,
+    borderColor: '#FFFF00',
+  },
+
+  voiceText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

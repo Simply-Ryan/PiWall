@@ -190,6 +190,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               <Text style={styles.buttonText}>📊 View Dashboard (Live Data)</Text>
             </TouchableOpacity>
           )}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('VoiceSettings')}
+          >
+            <Text style={styles.buttonText}>🎙️ Voice Settings</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
