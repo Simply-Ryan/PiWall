@@ -1,0 +1,147 @@
+# Telemetry Bridge (C# .NET) .gitignore
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# Visual Studio Code
+*.code-workspace
+
+# Rider
+.idea/
+.idea_modules/
+*.sln.iml
+out/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Local History for Visual Studio
+.localhistory/
+
+# Visual Studio Profile
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Resharper is a .NET coding add-in
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Code Coverage
+*.coverage
+*.coveragexml
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# MightyMoose
+*.mm.*
+AutoTest.Net/
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Publish
+PublishProfiles/
+*.publish.xml
+*.azurePubxml
+
+# FxCop
+FxCopResults.xml
+
+# SqlServer files
+*.mdf
+*.ldf
+*.ndf
+
+# Business Intelligence projects
+*.rdl.data
+*.bim.layout
+*.bim_*.settings
+*.rptproj.rsuser
+
+# OpenCover UI Analysis
+OpenCover/
+
+# Coverage results
+OpenCover/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# NuGet packages
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+# Nuget
+.nuget/
+
+# Local packages folder (useful for CI)
+/packages/
+
+# Dll files
+*.dll
+
+# User secrets
+secrets.json
+user-secrets.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+*.sublime-project
+*.sublime-workspace
+
+# Certificate files
+*.pem
+*.key
+*.crt
+*.cer

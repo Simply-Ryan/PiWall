@@ -1,0 +1,174 @@
+name: Test & Lint
+
+on:
+  push:
+    branches: [ main, develop, feature/** ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  frontend:
+    name: Frontend - Test & Lint
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Lint code
+        working-directory: ./frontend
+        run: npm run lint
+        continue-on-error: true  # Don't fail PR if linting issues exist
+      
+      - name: Type check
+        working-directory: ./frontend
+        run: npm run type-check
+      
+      - name: Run tests
+        working-directory: ./frontend
+        run: npm run test:ci
+      
+      - name: Upload coverage
+        working-directory: ./frontend
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: frontend
+          name: frontend-coverage
+
+  backend:
+    name: Backend - Test & Lint
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: pitwall_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Lint code
+        working-directory: ./backend
+        run: npm run lint
+        continue-on-error: true  # Don't fail PR if linting issues exist
+      
+      - name: Type check
+        working-directory: ./backend
+        run: npm run type-check
+      
+      - name: Database migrations
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/pitwall_test
+        run: npx prisma migrate deploy
+      
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/pitwall_test
+          NODE_ENV: test
+        run: npm run test:ci
+      
+      - name: Upload coverage
+        working-directory: ./backend
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: backend
+          name: backend-coverage
+
+  telemetry-bridge:
+    name: Telemetry Bridge - Test & Build
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        working-directory: ./telemetry-bridge
+        run: dotnet restore
+      
+      - name: Build solution
+        working-directory: ./telemetry-bridge
+        run: dotnet build --configuration Release --no-restore
+      
+      - name: Run tests
+        working-directory: ./telemetry-bridge
+        run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-test-results
+          path: |
+            **/TestResults/**/*.trx
+            **/TestResults/**/*.coverage
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [frontend, backend, telemetry-bridge]
+    if: always()
+    
+    steps:
+      - name: Check test status
+        run: |
+          if [ "${{ needs.frontend.result }}" = "failure" ]; then
+            echo "❌ Frontend tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.backend.result }}" = "failure" ]; then
+            echo "❌ Backend tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.telemetry-bridge.result }}" = "failure" ]; then
+            echo "❌ Telemetry Bridge tests failed"
+            exit 1
+          fi
+          echo "✅ All tests passed!"
