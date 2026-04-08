@@ -74,14 +74,14 @@ REM Install frontend dependencies
 cd ..\frontend
 echo Configuring frontend dependencies...
 echo Running: npm install
-call npm install
+call npm install --legacy-peer-deps
 if %ERRORLEVEL% NEQ 0 (
   echo [ERROR] Failed to install frontend dependencies
   echo.
   echo Troubleshooting tips:
   echo   1. Check your internet connection
   echo   2. Try: npm cache clean --force
-  echo   3. Try: del package-lock.json ^& npm install
+  echo   3. Try: del package-lock.json ^& npm install --legacy-peer-deps
   echo   4. Update Node.js to the latest version
   pause
   exit /b 1
