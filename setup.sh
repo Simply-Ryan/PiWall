@@ -4,82 +4,115 @@
 
 set -e  # Exit on error
 
-echo "🏁 PitWall Quick Start Setup"
-echo "============================"
-echo ""
+# Colors for better UI
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Progress counter
+STEP=0
+TOTAL_STEPS=7
+
+# Function for formatted logging
+log_step() {
+  STEP=$((STEP + 1))
+  echo -e "\n${BLUE}[${STEP}/${TOTAL_STEPS}]${NC} ${CYAN}$1${NC}"
+}
+
+log_success() {
+  echo -e "${GREEN}✅ $1${NC}"
+}
+
+log_error() {
+  echo -e "${RED}❌ $1${NC}"
+}
+
+log_warning() {
+  echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+log_info() {
+  echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+# Print header
+echo -e "\n${CYAN}╔════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║         🏁 PitWall Quick Setup        ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════╝${NC}\n"
 
 # Function to check command availability
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Check Node.js
+# Step 1: Check Node.js
+log_step "Checking Node.js installation"
 if ! command_exists node; then
-  echo "❌ Node.js is not installed"
-  echo "Please install Node.js 18+ from https://nodejs.org/"
+  log_error "Node.js is not installed"
+  log_info "Please install Node.js 18+ from https://nodejs.org/"
   exit 1
 fi
+log_success "Node.js $(node --version)"
 
-echo "✅ Node.js $(node --version)"
-
-# Check npm
+# Step 2: Check npm
+log_step "Checking npm installation"
 if ! command_exists npm; then
-  echo "❌ npm is not installed"
+  log_error "npm is not installed"
   exit 1
 fi
+log_success "npm $(npm --version)"
 
-echo "✅ npm $(npm --version)"
-
-# Check for Docker (optional, but better)
+# Step 3: Check Docker
+log_step "Checking Docker availability"
 if command_exists docker; then
-  echo "✅ Docker is available (will use for PostgreSQL)"
+  log_success "Docker is available (will use for PostgreSQL)"
   USE_DOCKER=true
 else
-  echo "⚠️  Docker not detected (will expect local PostgreSQL)"
+  log_warning "Docker not detected (will expect local PostgreSQL on localhost:5432)"
   USE_DOCKER=false
 fi
 
-echo ""
-echo "📦 Installing Dependencies..."
-echo ""
-
-# Install backend dependencies
+# Step 4: Install Dependencies
+log_step "Installing dependencies"
+echo -e "${BLUE}➜${NC} Backend dependencies..."
 cd backend
-echo "📚 Installing backend dependencies..."
-npm install --only=prod > /dev/null 2>&1 && npm install --save-dev > /dev/null 2>&1
+npm install > /dev/null 2>&1
+log_success "Backend dependencies installed"
 
-# Install frontend dependencies
+echo -e "${BLUE}➜${NC} Frontend dependencies..."
 cd ../frontend
-echo "📚 Installing frontend dependencies..."
-npm install --only=prod > /dev/null 2>&1 && npm install --save-dev > /dev/null 2>&1
+npm install > /dev/null 2>&1
+log_success "Frontend dependencies installed"
 
-echo ""
-echo "✅ Dependencies installed"
-echo ""
-
-# Setup database
+# Step 5: Setup Database
+log_step "Configuring database"
 cd ../backend
-
-echo "🗄️  Setting up database..."
 
 # Create .env if it doesn't exist
 if [ ! -f .env ]; then
-  echo "📝 Creating .env file..."
+  echo -e "${BLUE}➜${NC} Creating .env file from template..."
   cp .env.example .env
   
   # Generate JWT secret
   if command_exists openssl; then
     JWT_SECRET=$(openssl rand -base64 32)
     sed -i.bak "s/your-secret-key-change-in-production/$JWT_SECRET/" .env && rm -f .env.bak
-    echo "✅ Generated secure JWT secret"
+    log_success "Generated secure JWT secret"
   fi
+else
+  log_info ".env file already exists"
 fi
 
 # Setup database
 if [ "$USE_DOCKER" = true ]; then
+  echo -e "${BLUE}➜${NC} Setting up PostgreSQL with Docker..."
+  
   # Check if container already exists
   if ! docker ps -a --format '{{.Names}}' | grep -q pitwall-db; then
-    echo "🐳 Starting PostgreSQL container..."
+    log_info "Creating PostgreSQL container..."
     docker run -d \
       --name pitwall-db \
       -e POSTGRES_DB=pitwall \
@@ -88,50 +121,66 @@ if [ "$USE_DOCKER" = true ]; then
       -p 5432:5432 \
       postgres:14-alpine > /dev/null 2>&1
     
-    echo "⏳ Waiting for database to start..."
+    log_info "Waiting 3 seconds for database to start..."
     sleep 3
   else
-    echo "✅ PostgreSQL container already running"
+    log_info "PostgreSQL container already exists, starting it..."
     docker start pitwall-db > /dev/null 2>&1 || true
+    sleep 1
   fi
+  log_success "PostgreSQL database ready"
 else
-  echo "⚠️  Please ensure PostgreSQL is running on localhost:5432"
+  log_warning "Please ensure PostgreSQL is running on localhost:5432"
+  log_info "Waiting a moment before continuing..."
+  sleep 2
 fi
 
-echo "✅ Database ready"
-echo ""
+# Step 6: Run Database Migrations
+log_step "Running database migrations"
+echo -e "${BLUE}➜${NC} Initializing Prisma migrations..."
 
-# Run migrations
-echo "🔄 Running database migrations..."
-npx prisma migrate deploy > /dev/null 2>&1 || npx prisma migrate dev --name init
+# First, ensure migrations folder exists by running prisma migrate dev
+if ! npx prisma migrate dev --name init --skip-generate 2>/dev/null; then
+  log_warning "Initial migration already exists or setup already run"
+fi
+log_success "Database migrations completed"
 
-echo "✅ Migrations complete"
-echo ""
-
-# Offer to seed database
-read -p "Would you like to seed the database with test data? (y/n) " -n 1 -r
+# Step 7: Seed Database (Optional)
+log_step "Seeding database with test data"
+read -p "$(echo -e ${BLUE}?)$(echo -e ${NC}) Would you like to seed the database? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo "🌱 Seeding database..."
+  echo -e "${BLUE}➜${NC} Seeding database..."
   npm run seed > /dev/null 2>&1
-  echo "✅ Database seeded with test data"
+  log_success "Database seeded with test data"
   echo ""
-  echo "📝 Test user credentials:"
-  echo "   Username: racer1   Password: Password123!"
-  echo "   Username: racer2   Password: Password456!"
-  echo "   Username: racer3   Password: Password789!"
+  echo -e "${CYAN}📝 Test user credentials:${NC}"
+  echo -e "   ${GREEN}Username: racer1${NC}   ${GREEN}Password: Password123!${NC}"
+  echo -e "   ${GREEN}Username: racer2${NC}   ${GREEN}Password: Password456!${NC}"
+  echo -e "   ${GREEN}Username: racer3${NC}   ${GREEN}Password: Password789!${NC}"
+else
+  log_info "Skipping database seeding"
 fi
 
 echo ""
-echo "════════════════════════════════════════"
-echo "✅ Setup Complete!"
-echo "════════════════════════════════════════"
+echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║       ✅ Setup Complete!              ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
 echo ""
-echo "📌 To start the application, run:"
+echo -e "${CYAN}📌 To start the application:${NC}"
 echo ""
-echo "   Backend:"
-echo "   cd backend"
-echo "   npm run dev"
+echo -e "   ${GREEN}Backend:${NC}"
+echo -e "   cd backend"
+echo -e "   npm run dev"
+echo ""
+echo -e "   ${GREEN}Frontend (in another terminal):${NC}"
+echo "   cd frontend"
+echo "   npm run web"
+echo ""
+echo -e "${CYAN}🌐 Access the app at:${NC} ${GREEN}http://localhost:5173${NC}"
+echo -e "${CYAN}📚 API Docs at:${NC} ${GREEN}http://localhost:3000/api/docs${NC}"
+echo ""
+echo -e "${GREEN}Happy racing! 🏁${NC}"
 echo ""
 echo "   Frontend (in a new terminal):"
 echo "   cd frontend"
