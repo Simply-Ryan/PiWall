@@ -127,25 +127,33 @@ REACT_APP_WS_URL=ws://localhost:9999
 
 ## 🚀 Running the App (Daily Use)
 
-### Using VS Code Tasks (GUI - Easiest)
+### Using Quick Start Scripts (Easiest - One Click!)
 
-1. Open the workspace in VS Code
+**Windows:**
+1. Double-click `start-all.bat` in the project root
+2. This will:
+   - Start PostgreSQL (Docker)
+   - Install dependencies (if needed)
+   - Open Backend in new terminal (port 3000)
+   - Open Frontend in new terminal (port 5173)
+
+**macOS/Linux:**
+```bash
+chmod +x start-all.sh
+./start-all.sh
+```
+
+### Using VS Code Tasks (If scripts don't work)
+
+**NOTE:** VS Code needs to be restarted after first clone to pick up tasks.json
+
+1. **Restart VS Code completely** (close and reopen)
 2. Press `Ctrl+Shift+P` → type "Tasks: Run Task"
-3. Choose one (or sequence):
-
-**First time after setup:**
-```
-▶️ Start All Services (Backend + Frontend)
-```
-
-This runs:
-- Backend on http://localhost:3000
-- Frontend on http://localhost:5173
-
-**Or run individually:**
-1. `🐘 Start PostgreSQL (Docker)` - Starts database
-2. `🚀 Backend: Start Development Server` - Starts backend
-3. `🌐 Frontend: Start Web Development Server` - Starts frontend
+3. Select a task:
+   - `▶️ Start All Services` - Starts everything
+   - `🐘 Start PostgreSQL (Docker)` - Database only
+   - `🚀 Backend: Start Development Server` - Backend only
+   - `🌐 Frontend: Start Web Development Server` - Frontend only
 
 ### Using Terminal (Manual)
 
@@ -175,6 +183,24 @@ cd telemetry-bridge
 dotnet run
 # Only if using real racing sim data
 ```
+
+### Troubleshooting Task Discovery
+
+If tasks don't appear in VS Code:
+
+1. **Restart VS Code completely:**
+   - Close VS Code
+   - Reopen the PitWall folder
+   - Try `Ctrl+Shift+P` → "Tasks: Run Task" again
+
+2. **Use the Quick Start Scripts Instead:**
+   - Windows: Double-click `start-all.bat`
+   - macOS/Linux: Run `chmod +x start-all.sh && ./start-all.sh`
+
+3. **Clear VS Code Cache:**
+   - Delete `.vscode/tasks.json` and `.vscode/launch.json`
+   - Restart VS Code
+   - They will be re-created on next fetch from git
 
 ### Accessing the App
 
@@ -221,17 +247,20 @@ Once everything is running:
 
 ## 🔧 Common Tasks (VS Code)
 
-| Task | Command (Ctrl+Shift+P → Tasks) |
-|------|--------------------------------|
-| **Setup for first time** | `🏗️ Setup Complete Application` |
-| **Start everything** | `▶️ Start All Services` |
-| **Run tests** | `🧪 Backend/Frontend: Run Tests` |
-| **Check code quality** | `🧹 Backend/Frontend: Lint Code` |
-| **Type checking** | `🔧 Type Check: Frontend` |
-| **Build production** | `🔧 Build: Backend` / `Build: Frontend` |
-| **View database** | `📊 Prisma: Open Database Studio` |
-| **Stop Docker** | `🐳 Docker: Stop All Containers` |
-| **Reset database** | `♻️ Database: Reset` |
+| Task | Command (Ctrl+Shift+P → Tasks) | Alternative |
+|------|--------------------------------|-------------|
+| **Setup for first time** | `🏗️ Setup Complete Application` | `npm install` in each folder |
+| **Start everything** | `▶️ Start All Services` | `./start-all.bat` or `./start-all.sh` |
+| **Start database** | `🐘 Start PostgreSQL (Docker)` | `cd backend && docker-compose up -d` |
+| **Start backend** | `🚀 Backend: Start Development Server` | `cd backend && npm run dev` |
+| **Start frontend** | `🌐 Frontend: Start Web Development Server` | `cd frontend && npm run web` |
+| **Run tests** | `🧪 Backend/Frontend: Run Tests` | `npm run test` |
+| **Check code quality** | `🧹 Backend/Frontend: Lint Code` | `npm run lint` |
+| **Type checking** | `🔧 Type Check: Frontend` | `npm run type-check` |
+| **Build production** | `🔧 Build: Backend` / `Build: Frontend` | `npm run build` |
+| **View database** | `📊 Prisma: Open Database Studio` | `npm run prisma:studio` |
+| **Stop Docker** | `🐳 Docker: Stop All Containers` | `docker-compose down` |
+| **Reset database** | `♻️ Database: Reset` | `npm run db:reset` |
 
 ---
 
