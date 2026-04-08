@@ -45,8 +45,7 @@ if %ERRORLEVEL% EQU 0 (
 REM Check for Python (required for native modules like bcrypt)
 where python >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-  for /f "tokens=*" %%i in ('python --version 2^>'^&1') do set PYTHON_VERSION=%%i
-  echo [OK] Python available: !PYTHON_VERSION!
+  echo [OK] Python is available
 ) else (
   echo [INFO] Python not found in PATH (may be needed for native module compilation)
 )
