@@ -4,9 +4,9 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:14-alpine
-    container_name: stockleague-db
+    container_name: pitwall-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-stockleague}
+      POSTGRES_DB: ${POSTGRES_DB:-pitwall}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
     ports:
@@ -26,10 +26,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: stockleague-api
+    container_name: pitwall-api
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-stockleague}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-pitwall}
       PORT: 3000
       HOST: 0.0.0.0
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-key-min-32-chars-long-12345}
@@ -48,7 +48,7 @@ services:
       - ./src:/app/src
       - ./logs:/app/logs
     networks:
-      - stockleague-network
+      - pitwall-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -61,5 +61,5 @@ volumes:
     driver: local
 
 networks:
-  stockleague-network:
+  pitwall-network:
     driver: bridge

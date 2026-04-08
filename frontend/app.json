@@ -28,16 +28,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      [
-        "expo-speech",
-        {
-          "speechSynthesisVoicePreferences": [
-            "com.google.android.tts"
-          ]
-        }
-      ]
-    ]
+    }
   }
 }
