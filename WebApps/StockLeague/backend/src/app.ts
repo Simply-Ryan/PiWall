@@ -17,6 +17,7 @@ import telemetryRoutes from './routes/telemetry';
 import lapRoutes from './routes/laps';
 import leaderboardRoutes from './routes/leaderboards';
 import userRoutes from './routes/users';
+import analyticsRoutes from './routes/analytics';
 
 export const createApp = (): Express => {
   const app = express();
@@ -53,6 +54,7 @@ export const createApp = (): Express => {
   // Protected routes (auth required)
   app.use(`${apiPrefix}/users`, authMiddleware, userRoutes);
   app.use(`${apiPrefix}/sessions`, authMiddleware, sessionRoutes);
+  app.use(`${apiPrefix}/sessions`, authMiddleware, analyticsRoutes); // Analytics routes
   app.use(`${apiPrefix}/telemetry`, authMiddleware, telemetryRoutes);
   app.use(`${apiPrefix}/laps`, authMiddleware, lapRoutes);
   app.use(`${apiPrefix}/leaderboards`, leaderboardRoutes); // Public leaderboards
