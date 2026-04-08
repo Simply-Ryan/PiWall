@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>PitWall.Telemetry</AssemblyName>
+    <RootNamespace>PitWall.Telemetry</RootNamespace>
+    <Version>0.1.0</Version>
+    <Authors>PitWall Team</Authors>
+    <Description>PitWall Telemetry Bridge - Multi-sim UDP/API normalizer</Description>
+    <RepositoryUrl>https://github.com/yourusername/PitWall</RepositoryUrl>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- NuGet Package Dependencies -->
+  <ItemGroup>
+    <!-- Core Framework -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    
+    <!-- WebSocket -->
+    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+    
+    <!-- JSON Processing -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    
+    <!-- Testing -->
+    <PackageReference Include="xunit" Version="2.6.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
+    
+    <!-- Code Quality -->
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Folder Structure -->
+  <ItemGroup>
+    <Folder Include="src\Models\" />
+    <Folder Include="src\Services\" />
+    <Folder Include="src\Connectors\" />
+    <Folder Include="src\WebSocket\" />
+    <Folder Include="tests\Unit\" />
+    <Folder Include="tests\Integration\" />
+  </ItemGroup>
+
+</Project>

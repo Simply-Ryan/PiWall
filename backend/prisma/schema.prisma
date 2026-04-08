@@ -1,0 +1,108 @@
+// This schema will be expanded during Phase 2 and 3
+// Current setup provides foundation for telemetry storage
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - Phase 4
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+
+  @@map("users")
+}
+
+// Session model - Phase 2-3
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  game      String   @db.VarChar(50)
+  track     String?
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int?     // in seconds
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  telemetry Telemetry[]
+
+  @@index([userId])
+  @@index([startTime])
+  @@map("sessions")
+}
+
+// Telemetry model - Phase 2-3
+model Telemetry {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  timestamp   DateTime
+  lapNumber   Int
+  
+  // Vehicle data
+  gear        Int
+  rpm         Int
+  speed       Float
+  throttle    Float    @db.Decimal(5, 4)
+  brake       Float    @db.Decimal(5, 4)
+  steering    Float    @db.Decimal(5, 4)
+  
+  // Fuel
+  fuelLevel   Float
+  fuelUsed    Float?
+  
+  // Tires
+  tireTemp    Json?    // { FL: [in, mid, out], FR: [...], etc }
+  tireWear    Json?    // { FL: pct, FR: pct, etc }
+  
+  // Performance
+  deltaToLap  Float?
+  lapTime     Float?
+  
+  // Environmental
+  airTemp     Float?
+  trackTemp   Float?
+  weather     String   @db.VarChar(50)
+  
+  // Raw data for analysis
+  rawData     Json?
+  
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([timestamp])
+  @@index([lapNumber])
+  @@map("telemetry")
+}
+
+// Analysis model - Phase 3
+model SessionAnalysis {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  
+  insights    Json?    // Array of AI insights
+  score       Float?   // Performance score 0-100
+  degradation Json?    // Tire degradation analysis
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("session_analyses")
+}
