@@ -53,7 +53,13 @@ if %ERRORLEVEL% EQU 0 (
 REM Step 4: Install Dependencies
 echo [4/7] Installing dependencies...
 echo.
+
+REM Clean npm cache and remove old lock files
+echo Cleaning npm cache and old lock files...
+call npm cache clean --force > nul 2>&1
+
 cd backend
+if exist package-lock.json del package-lock.json > nul
 echo Configuring backend dependencies...
 echo Running: npm install
 call npm install
@@ -62,9 +68,9 @@ if %ERRORLEVEL% NEQ 0 (
   echo.
   echo Troubleshooting tips:
   echo   1. Check your internet connection
-  echo   2. Try: npm cache clean --force
-  echo   3. Try: del package-lock.json ^& npm install
-  echo   4. Update Node.js to the latest version
+  echo   2. Try running setup.bat again
+  echo   3. Update Node.js to the latest version
+  echo   4. Check npm-cache log: %APPDATA%\npm-cache\_logs
   pause
   exit /b 1
 )
@@ -72,17 +78,18 @@ echo [OK] Backend dependencies installed
 
 REM Install frontend dependencies
 cd ..\frontend
+if exist package-lock.json del package-lock.json > nul
 echo Configuring frontend dependencies...
-echo Running: npm install
+echo Running: npm install --legacy-peer-deps
 call npm install --legacy-peer-deps
 if %ERRORLEVEL% NEQ 0 (
   echo [ERROR] Failed to install frontend dependencies
   echo.
   echo Troubleshooting tips:
   echo   1. Check your internet connection
-  echo   2. Try: npm cache clean --force
-  echo   3. Try: del package-lock.json ^& npm install --legacy-peer-deps
-  echo   4. Update Node.js to the latest version
+  echo   2. Try running setup.bat again
+  echo   3. Update Node.js to the latest version
+  echo   4. Check npm-cache log: %APPDATA%\npm-cache\_logs
   pause
   exit /b 1
 )

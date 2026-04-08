@@ -77,14 +77,29 @@ fi
 
 # Step 4: Install Dependencies
 log_step "Installing dependencies"
+echo -e "${BLUE}➜${NC} Cleaning npm cache and removing old lock files..."
+npm cache clean --force > /dev/null 2>&1
+
 echo -e "${BLUE}➜${NC} Backend dependencies..."
 cd backend
-npm install > /dev/null 2>&1
+rm -f package-lock.json
+npm install
+if [ $? -ne 0 ]; then
+  log_error "Backend dependencies installation failed"
+  log_info "Troubleshooting: Check your internet connection and try running setup.sh again"
+  exit 1
+fi
 log_success "Backend dependencies installed"
 
 echo -e "${BLUE}➜${NC} Frontend dependencies..."
 cd ../frontend
-npm install > /dev/null 2>&1
+rm -f package-lock.json
+npm install --legacy-peer-deps
+if [ $? -ne 0 ]; then
+  log_error "Frontend dependencies installation failed"
+  log_info "Troubleshooting: Check your internet connection and try running setup.sh again"
+  exit 1
+fi
 log_success "Frontend dependencies installed"
 
 # Step 5: Setup Database
