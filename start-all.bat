@@ -1,71 +1,119 @@
 @echo off
 REM PitWall - Start All Services (Windows)
-REM This batch file starts PostgreSQL, Backend, and Frontend
+REM Automatically detects and uses Docker or local PostgreSQL
 
 setlocal enabledelayedexpansion
 
 echo.
-echo 🏁 PitWall - Starting All Services
-echo ==================================
+echo [PitWall] Starting All Services
+echo ===============================
 echo.
 
-REM Check if Docker is installed
-docker --version >nul 2>&1
-if errorlevel 1 (
-  echo ERROR: Docker is not installed or not in PATH
-  echo Please install Docker Desktop from https://www.docker.com/
+REM --- CHECK NODE.JS ---
+where node >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+  echo [ERROR] Node.js not found!
+  echo Please install from https://nodejs.org/
   pause
   exit /b 1
 )
 
-REM Start PostgreSQL
-echo [1/3] Starting PostgreSQL (Docker)...
-cd backend
-docker-compose up -d
-cd ..
-echo.
-echo ✓ PostgreSQL started on port 5432
+for /f "tokens=*" %%i in ('node --version') do set NODE_VERSION=%%i
+echo [OK] Node.js %NODE_VERSION%
 echo.
 
-timeout /t 3 /nobreak
+REM --- CHECK DATABASE ---
+echo [STEP 1] Checking database...
+set USE_DOCKER=false
 
-REM Install dependencies if needed
-if not exist "backend\node_modules" (
-  echo [2/3] Installing Backend dependencies...
-  cd backend
-  call npm install
-  cd ..
-  echo ✓ Backend dependencies installed
-  echo.
+where docker >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    docker info >nul 2>nul
+    if %ERRORLEVEL% EQU 0 (
+        echo [OK] Docker detected and running
+        set USE_DOCKER=true
+        
+        REM Start PostgreSQL container
+        echo [STEP 1.1] Starting PostgreSQL container...
+        cd backend
+        if exist docker-compose.yml (
+            docker-compose up -d
+            cd ..
+            timeout /t 3 /nobreak
+            echo [OK] PostgreSQL started on port 5432
+        ) else (
+            cd ..
+        )
+    ) else (
+        echo [WARNING] Docker CLI found but daemon not running
+        echo [INFO] Attempting to use local PostgreSQL on port 5432...
+    )
+) else (
+    echo [INFO] Docker not installed
+    echo [INFO] Please ensure PostgreSQL is running on port 5432
 )
+echo.
+
+REM --- INSTALL DEPENDENCIES ---
+echo [STEP 2] Installing dependencies...
+
+if not exist "backend\node_modules" (
+  echo [2.1] Backend dependencies...
+  cd backend
+  call npm install --legacy-peer-deps 2>nul
+  if !ERRORLEVEL! NEQ 0 (
+    echo [WARNING] npm install had issues, continuing anyway...
+  )
+  cd ..
+)
+echo [OK] Backend ready
+echo.
 
 if not exist "frontend\node_modules" (
-  echo [2/3] Installing Frontend dependencies...
+  echo [2.2] Frontend dependencies...
   cd frontend
-  call npm install
+  call npm install --legacy-peer-deps 2>nul
+  if !ERRORLEVEL! NEQ 0 (
+    echo [WARNING] npm install had issues, continuing anyway...
+  )
   cd ..
-  echo ✓ Frontend dependencies installed
-  echo.
 )
+echo [OK] Frontend ready
+echo.
 
-REM Start Backend in a new terminal
+REM --- DATABASE SETUP ---
+echo [STEP 3] Setting up database...
+cd backend
+call npx prisma db push --skip-generate 2>nul
+if %ERRORLEVEL% EQU 0 (
+    echo [OK] Database schema synchronized
+) else (
+    echo [WARNING] Database sync may have failed - PostgreSQL must be running
+)
+cd ..
+echo.
+
+REM --- START SERVICES ---
+echo [STEP 4] Starting services...
+echo.
 echo Starting Backend on port 3000...
-start cmd /k "cd backend && npm run dev"
+start "PitWall Backend" cmd /k "cd backend && npm run dev"
 
-REM Wait for backend to start
-timeout /t 3 /nobreak
+timeout /t 2 /nobreak
 
-REM Start Frontend in a new terminal
 echo Starting Frontend on port 5173...
-start cmd /k "cd frontend && npm run web"
+start "PitWall Frontend" cmd /k "cd frontend && npm run web"
 
 echo.
-echo ========================================
-echo ✓ All services started!
+echo ==========================================
+echo [SUCCESS] Services starting!
+echo ==========================================
 echo.
-echo 📦 Backend: http://localhost:3000
-echo 📱 Frontend: http://localhost:5173
+echo If browsers don't auto-open:
+echo   - Backend:  http://localhost:3000
+echo   - Frontend: http://localhost:5173
 echo.
-echo Close this window when done.
-echo ========================================
+echo To stop: Close the terminal windows or press Ctrl+C
+echo ==========================================
+echo.
 pause
