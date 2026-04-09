@@ -54,7 +54,8 @@ export const createApp = (): Express => {
   // Protected routes (auth required)
   app.use(`${apiPrefix}/users`, authMiddleware, userRoutes);
   app.use(`${apiPrefix}/sessions`, authMiddleware, sessionRoutes);
-  app.use(`${apiPrefix}/sessions`, authMiddleware, analyticsRoutes); // Analytics routes
+  app.use(`${apiPrefix}/sessions`, authMiddleware, analyticsRoutes); // Session analytics routes
+  app.use(`${apiPrefix}/analytics`, authMiddleware, analyticsRoutes); // Additional analytics endpoints (fuel, etc)
   app.use(`${apiPrefix}/telemetry`, authMiddleware, telemetryRoutes);
   app.use(`${apiPrefix}/laps`, authMiddleware, lapRoutes);
   app.use(`${apiPrefix}/leaderboards`, leaderboardRoutes); // Public leaderboards

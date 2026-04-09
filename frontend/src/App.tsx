@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Provider } from 'react-redux';
 import { store } from '@redux/store';
-import { HomeScreen, DashboardScreen, VoiceSettingsScreen } from '@screens';
+import { HomeScreen, DashboardScreen, VoiceSettingsScreen, FuelStrategyScreen } from '@screens';
 
 /**
  * Navigation stack parameter list
@@ -14,6 +14,7 @@ export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
   VoiceSettings: undefined;
+  FuelStrategy: undefined;
 };
 
 /**
@@ -59,6 +60,11 @@ export const App: React.FC = () => {
           <Stack.Screen
             name="VoiceSettings"
             component={VoiceSettingsScreen}
+            options={{ animationEnabled: false }}
+          />
+          <Stack.Screen
+            name="FuelStrategy"
+            component={FuelStrategyScreen}
             options={{ animationEnabled: false }}
           />
         </Stack.Navigator>

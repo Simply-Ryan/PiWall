@@ -3,6 +3,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import telemetryReducer from './slices/telemetrySlice';
 import sessionReducer from './slices/sessionSlice';
 import uiReducer from './slices/uiSlice';
+import fuelStrategyReducer from './slices/fuelStrategySlice';
 
 /**
  * Redux store configuration
@@ -15,6 +16,7 @@ export const store = configureStore({
     telemetry: telemetryReducer,
     session: sessionReducer,
     ui: uiReducer,
+    fuelStrategy: fuelStrategyReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

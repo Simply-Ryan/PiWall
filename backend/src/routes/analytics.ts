@@ -377,6 +377,117 @@ router.get('/trends/driver-performance', authMiddleware, async (req: AuthRequest
   }
 });
 
+// GET /api/analytics/fuel/:sessionId - Fuel consumption analysis
+router.get('/fuel/:sessionId', authMiddleware, async (req: AuthRequest, res, next: NextFunction) => {
+  try {
+    const { sessionId } = req.params;
+
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: {
+        laps: { orderBy: { lapNumber: 'asc' } },
+        telemetry: { orderBy: { timestamp: 'asc' } },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundError('Session not found');
+    }
+
+    if (session.userId !== req.userId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const laps = session.laps || [];
+    const telemetry = session.telemetry || [];
+
+    if (laps.length === 0 || telemetry.length === 0) {
+      throw new ValidationError('Insufficient data for fuel analysis');
+    }
+
+    // Calculate fuel consumption per lap
+    const fuelConsumption = [];
+    let previousFuel: number | null = null;
+
+    for (const lap of laps) {
+      if (lap.fuel !== null && previousFuel !== null) {
+        const consumption = Math.max(0, previousFuel - lap.fuel);
+        fuelConsumption.push(consumption);
+      }
+      if (lap.fuel !== null) {
+        previousFuel = lap.fuel;
+      }
+    }
+
+    if (fuelConsumption.length === 0) {
+      throw new ValidationError('No fuel consumption data available');
+    }
+
+    // Calculate statistics
+    const avgConsumption = fuelConsumption.reduce((a, b) => a + b, 0) / fuelConsumption.length;
+    const minConsumption = Math.min(...fuelConsumption);
+    const maxConsumption = Math.max(...fuelConsumption);
+    const consistency = stddev(fuelConsumption);
+
+    // Analyze trend (last 5 laps vs first 5 laps)
+    const recentLaps = fuelConsumption.slice(-5);
+    const olderLaps = fuelConsumption.slice(0, Math.max(1, fuelConsumption.length - 5 - 2));
+    const recentAvg = recentLaps.reduce((a, b) => a + b, 0) / recentLaps.length;
+    const olderAvg = olderLaps.length > 0 ? olderLaps.reduce((a, b) => a + b, 0) / olderLaps.length : recentAvg;
+    const percentTrend = ((recentAvg - olderAvg) / olderAvg) * 100;
+
+    let trend = 'stable';
+    if (percentTrend > 5) trend = 'increasing';
+    if (percentTrend < -5) trend = 'decreasing';
+
+    // Find best and worst laps by consumption
+    const bestConsumptionLap = fuelConsumption.indexOf(minConsumption) + 1;
+    const worstConsumptionLap = fuelConsumption.indexOf(maxConsumption) + 1;
+
+    // Calculate final fuel level
+    const firstLap = laps[0];
+    const lastLap = laps[laps.length - 1];
+    const initialFuel = firstLap.fuel || 0;
+    const finalFuel = lastLap.fuel || 0;
+    const totalConsumed = initialFuel - finalFuel;
+
+    // Efficiency score (0-100)
+    const avgSpeed = telemetry.length > 0 ? telemetry.reduce((a, b) => a + b.speed, 0) / telemetry.length : 0;
+    const efficiencyScore = Math.max(0, Math.min(100, avgSpeed / (avgConsumption * 10)));
+
+    res.json({
+      sessionId,
+      track: session.track,
+      totalLaps: laps.length,
+      consumption: {
+        average: parseFloat(avgConsumption.toFixed(3)),
+        min: parseFloat(minConsumption.toFixed(3)),
+        max: parseFloat(maxConsumption.toFixed(3)),
+        consistency: parseFloat(consistency.toFixed(3)),
+      },
+      trend: {
+        direction: trend,
+        percentChange: parseFloat(percentTrend.toFixed(2)),
+      },
+      fuelMetrics: {
+        initialFuel: parseFloat(initialFuel.toFixed(2)),
+        finalFuel: parseFloat(finalFuel.toFixed(2)),
+        totalConsumed: parseFloat(totalConsumed.toFixed(2)),
+      },
+      peaks: {
+        bestConsumptionLap,
+        worstConsumptionLap,
+        bestConsumption: parseFloat(minConsumption.toFixed(3)),
+        worstConsumption: parseFloat(maxConsumption.toFixed(3)),
+      },
+      efficiency: parseFloat(efficiencyScore.toFixed(1)),
+      consumptionHistory: fuelConsumption.map(c => parseFloat(c.toFixed(3))),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Helper function: calculate standard deviation
 function stddev(arr: number[]): number {
   if (arr.length < 2) return 0;
