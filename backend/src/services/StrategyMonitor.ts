@@ -146,7 +146,7 @@ export class StrategyMonitor {
         actualValue: actualFuelUsed,
         deviation,
         lapNumber: currentLap,
-        timestamp: telemetry.timestamp,
+        timestamp: typeof telemetry.timestamp === 'number' ? telemetry.timestamp : (telemetry.timestamp as Date).getTime(),
         message: `Fuel ${actualFuelUsed > expectedFuelUsed ? 'over' : 'under'} consumption by ${Math.abs(deviation).toFixed(1)}L`,
         recalculationNeeded: Math.abs(deviationPercent) > 20,
       };
@@ -199,7 +199,7 @@ export class StrategyMonitor {
         actualValue: averageActualWear,
         deviation: wearDeviation,
         lapNumber: currentLap,
-        timestamp: telemetry.timestamp,
+        timestamp: typeof telemetry.timestamp === 'number' ? telemetry.timestamp : (telemetry.timestamp as Date).getTime(),
         message: `Tires wearing ${wearDeviationPercent > 0 ? 'faster' : 'slower'} than expected (${averageActualWear.toFixed(0)}%)`,
         recalculationNeeded: wearDeviationPercent > 25,
       };
@@ -233,8 +233,8 @@ export class StrategyMonitor {
         expectedValue: 0.0,
         actualValue: avgDelta,
         deviation: avgDelta,
-        lapNumber: telemetry.performance.lapNumber,
-        timestamp: telemetry.timestamp,
+        lapNumber: (telemetry.performance as any)?.lapNumber || 0,
+        timestamp: typeof telemetry.timestamp === 'number' ? telemetry.timestamp : (telemetry.timestamp as Date).getTime(),
         message: `Running ${avgDelta.toFixed(2)}s slower than target pace`,
         recalculationNeeded: avgDelta > 1.5,
       };
@@ -268,7 +268,7 @@ export class StrategyMonitor {
         actualValue: currentLap,
         deviation: lapsSincePlannedPit,
         lapNumber: currentLap,
-        timestamp: telemetry.timestamp,
+        timestamp: typeof telemetry.timestamp === 'number' ? telemetry.timestamp : (telemetry.timestamp as Date).getTime(),
         message: `Pit stop ${lapsSincePlannedPit} laps overdue (planned for lap ${nextPlannedPit.lapNumber})`,
         recalculationNeeded: true,
       };
@@ -311,10 +311,10 @@ export class StrategyMonitor {
     const criticalIssues = this.session.deviations.filter(
       (d) => d.severity === 'critical',
     );
-    const recalcNeeded = this.session.deviations.some((d) => d.recalculationNeeded);
+    const recalculationNeeded = this.session.deviations.some((d) => d.recalculationNeeded);
 
     return {
-      isOnTrack: this.session.isOnTrack && !recalcNeeded,
+      isOnTrack: this.session.isOnTrack && !recalculationNeeded,
       fuelDeviation: this.session.fuelDeviation,
       tireDeviation: this.session.tireDeviation,
       criticalIssueCount: criticalIssues.length,

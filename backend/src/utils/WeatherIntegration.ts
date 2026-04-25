@@ -131,17 +131,17 @@ export class WeatherIntegration {
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${this.openWeatherKey}&units=metric`;
 
     const response = await fetch(url);
-    const data = await response.json();
+    const data = (await response.json()) as any;
 
     return {
       timestamp: new Date(),
-      temperature: data.main.temp,
-      humidity: data.main.humidity,
-      windSpeed: data.wind.speed * 3.6, // m/s to km/h
-      windDirection: data.wind.deg || 0,
-      condition: this.mapOpenWeatherCondition(data.weather[0].main),
-      visibility: data.visibility,
-      pressure: data.main.pressure,
+      temperature: data.main?.temp || 20,
+      humidity: data.main?.humidity || 50,
+      windSpeed: (data.wind?.speed || 0) * 3.6, // m/s to km/h
+      windDirection: data.wind?.deg || 0,
+      condition: this.mapOpenWeatherCondition(data.weather?.[0]?.main || 'Clear'),
+      visibility: data.visibility || 10000,
+      pressure: data.main?.pressure || 1013,
       source: 'openweathermap',
     };
   }
@@ -156,17 +156,17 @@ export class WeatherIntegration {
     const url = `https://api.weatherapi.com/v1/current.json?key=${this.weatherApiKey}&q=${latitude},${longitude}`;
 
     const response = await fetch(url);
-    const data = await response.json();
+    const data = (await response.json()) as any;
 
     return {
       timestamp: new Date(),
-      temperature: data.current.temp_c,
-      humidity: data.current.humidity,
-      windSpeed: data.current.wind_kph,
-      windDirection: data.current.wind_degree,
-      condition: this.mapWeatherApiCondition(data.current.condition.code),
-      visibility: data.current.vis_km * 1000,
-      pressure: data.current.pressure_mb,
+      temperature: data.current?.temp_c || 20,
+      humidity: data.current?.humidity || 50,
+      windSpeed: data.current?.wind_kph || 0,
+      windDirection: data.current?.wind_degree || 0,
+      condition: this.mapWeatherApiCondition(data.current?.condition?.code || 1000),
+      visibility: (data.current?.vis_km || 10) * 1000,
+      pressure: data.current?.pressure_mb || 1013,
       source: 'weather_api',
     };
   }

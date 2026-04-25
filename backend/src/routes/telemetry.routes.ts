@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import logger from '@utils/logger';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -38,10 +38,10 @@ router.get('/status', (_req: Request, res: Response) => {
 
 // Error handling middleware
 router.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  logger.error({ error: err }, 'Telemetry route error');
+  logger.error(`Telemetry route error: ${err instanceof Error ? err.message : String(err)}`);
   res.status(500).json({
     error: 'Telemetry Service Error',
-    message: err.message,
+    message: err.message || 'Unknown error',
   });
 });
 

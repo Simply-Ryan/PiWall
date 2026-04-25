@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -35,15 +35,15 @@ export const createApp = (): Express => {
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Logging
-  app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
+  app.use(morgan('combined', { stream: { write: (msg: string) => logger.info(msg.trim()) } }));
 
   // Health check
-  app.get('/health', (req: Request, res: Response) => {
+  app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
   // API version
-  app.get('/version', (req: Request, res: Response) => {
+  app.get('/version', (_req: Request, res: Response) => {
     res.json({ version: '1.0.0', phase: 'Phase 2 - Backend API' });
   });
 
@@ -63,11 +63,11 @@ export const createApp = (): Express => {
   app.use(`${apiPrefix}/leaderboards`, leaderboardRoutes); // Public leaderboards
 
   // 404 handler
-  app.use((req: Request, res: Response) => {
+  app.use((_req: Request, res: Response) => {
     res.status(404).json({
       error: 'Not Found',
-      message: `${req.method} ${req.path} not found`,
-      path: req.path,
+      message: `404 Not found`,
+      path: _req.path,
     });
   });
 

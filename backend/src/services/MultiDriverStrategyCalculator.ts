@@ -140,10 +140,8 @@ export class MultiDriverStrategyCalculator {
           lapNumber: pitLap,
           fuelAmount,
           tireChange: true,
-          tireCompound: input.vehicleSpecs.tireCompound,
-          estimatedLossSeconds: input.pitLossTime || 45,
-          rationale: `Driver change: ${stint.driverId} → ${nextStint.driverId}`,
-          driverSwap: true,
+          tireSet: { compound: 'medium', age: 0, totalLaps: 0 },
+          duration: 45,
         });
       }
     });

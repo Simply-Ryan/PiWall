@@ -112,7 +112,7 @@ router.get('/:sessionId', authMiddleware, async (req: AuthRequest, res, next: Ne
 });
 
 // DELETE /api/telemetry/:sessionId - Delete all telemetry for session
-router.delete('/:sessionId', authMiddleware, async (req: AuthRequest, res) => {
+router.delete('/:sessionId', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const { sessionId } = req.params;
 

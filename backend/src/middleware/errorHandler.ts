@@ -28,15 +28,15 @@ export class InternalServerError extends Error {
 
 export const errorHandler = (
   error: ApiError,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   const status = error.status || 500;
   const code = error.code || 'ERROR';
   const message = error.message || 'An unexpected error occurred';
 
-  logger.error(`Error [${status}] ${code}: ${message}`, { error });
+  logger.error(`Error [${status}] ${code}: ${message}`);
 
   res.status(status).json({
     error: code,

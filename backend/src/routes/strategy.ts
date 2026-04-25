@@ -163,13 +163,14 @@ router.post('/:strategyId/adjust', async (req: Request, res: Response) => {
     // Create adjustment record
     const adjustment: StrategyAdjustment = {
       id: `adjust-${Date.now()}`,
-      strategyId,
-      lap,
-      fuelUsed: fuel || 0,
-      lapTime: 0,
-      tireWearPercent: wear || 0, 
-      deviationReason: reason || 'Driver input',
-      timestamp: new Date(),
+      reason: reason || 'Driver input',
+      adjustedStrategy: {
+        name: 'adjusted',
+        pitStops: [],
+        expectedFinalTime: 0,
+        riskLevel: 0.5,
+      },
+      impact: 0,
     };
 
     // Analyze if significant deviation
@@ -236,9 +237,9 @@ router.post('/:strategyId/recalculate', async (req: Request, res: Response) => {
       data: {
         strategyId,
         recalculatedAt: new Date(),
-        newScenarios: newStrategy.scenarios,
-        recommendedScenario: 1, // Likely case
-        changeRecommendation: 'Pit 2 laps earlier due to fuel consumption',
+        newScenarios: newStrategy.scenarios || newStrategy.alternativeStrategies,
+        recommendedScenario: newStrategy.recommendedStrategy,
+        changeRecommendation: 'Strategy recalculated based on live data',
       },
     });
   } catch (error) {

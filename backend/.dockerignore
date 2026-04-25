@@ -17,6 +17,5 @@ coverage
 .prettierignore
 .eslintignore
 jest.config.js
-tsconfig.json
 *.md
 !PHASE_2_SETUP.md

@@ -9,3 +9,4 @@ export { VoiceSettingsScreen } from './VoiceSettingsScreen';
 export { FuelStrategyScreen } from './FuelStrategyScreen';
 export { RaceStrategyInputScreen } from './RaceStrategyInputScreen';
 export { RaceStrategyScreen } from './RaceStrategyScreen';
+export { DebugTestScreen } from './DebugTestScreen';

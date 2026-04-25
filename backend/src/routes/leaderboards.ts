@@ -46,7 +46,7 @@ router.get('/personal', authMiddleware, async (req: AuthRequest, res, next: Next
   try {
     const bestLaps = await prisma.lap.findMany({
       where: { userId: req.userId },
-      distinct: ['session'],
+      distinct: ['sessionId'],
       orderBy: { lapTime: 'asc' },
       include: {
         session: { select: { track: true, simulator: true } },

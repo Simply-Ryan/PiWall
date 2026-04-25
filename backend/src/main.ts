@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-import { createApp } from './app.js';
-import { logger } from '@utils/logger';
+import { createApp } from './app';
+import { logger } from './utils/logger';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -16,14 +16,7 @@ async function main(): Promise<void> {
     const app = createApp();
 
     app.listen(PORT, '0.0.0.0', () => {
-      logger.info(
-        {
-          port: PORT,
-          environment: NODE_ENV,
-          url: `http://localhost:${PORT}`,
-        },
-        'Server listening'
-      );
+      logger.info(`Server listening on http://0.0.0.0:${PORT} (environment: ${NODE_ENV})`);
     });
 
     // Graceful shutdown
@@ -37,7 +30,7 @@ async function main(): Promise<void> {
       process.exit(0);
     });
   } catch (error) {
-    logger.error({ error }, 'Failed to start server');
+    logger.error(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   }
 }

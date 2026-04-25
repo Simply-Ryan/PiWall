@@ -116,21 +116,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-  infoSection: {
-    alignItems: 'center',
-  },
-
-  infoLabel: {
-    color: '#666666',
-    fontSize: 8,
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-
-  infoValue: {
-    color: '#CCCCCC',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-});

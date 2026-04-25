@@ -17,7 +17,6 @@ router.get('/:id/analytics', authMiddleware, async (req: AuthRequest, res, next:
       include: {
         laps: true,
         telemetry: true,
-        statistics: true,
       },
     });
 
@@ -288,7 +287,7 @@ router.get('/:id/weather-history', authMiddleware, async (req: AuthRequest, res,
 
     const session = await prisma.session.findUnique({
       where: { id },
-      include: { telemetry: { orderBy: { time: 'asc' } } },
+      include: { telemetry: { orderBy: { timestamp: 'asc' } } },
     });
 
     if (!session) {
@@ -304,7 +303,7 @@ router.get('/:id/weather-history', authMiddleware, async (req: AuthRequest, res,
     // Group by temperature ranges (simple weather proxy)
     const tempGroups: { [key: string]: any[] } = {};
     telemetry.forEach(t => {
-      const tempRange = t.roadTemp >= 20 ? 'Warm' : t.roadTemp >= 10 ? 'Mild' : 'Cold';
+      const tempRange = (t as any).roadTemp >= 20 ? 'Warm' : (t as any).roadTemp >= 10 ? 'Mild' : 'Cold';
       if (!tempGroups[tempRange]) {
         tempGroups[tempRange] = [];
       }

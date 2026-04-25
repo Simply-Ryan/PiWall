@@ -110,12 +110,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
-    marginVertical: 6,
-    fontFamily: 'monospace',
-  },
-
-  status: {
-    color: '#888888',
-    fontSize: 10,
-  },
-});
